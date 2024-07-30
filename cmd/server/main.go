@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"screencapturer/internal/capturer"
+	"screencapturer/internal/constant"
 	"screencapturer/internal/mdnsserver"
 )
 
 const CAPTURE_INTERVAL_IN_SECONDS = 5
-const WEB_SERVER_PORT = 8949
 
 var vhost string
 var help bool
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// Run the web server
-	webServerHost := fmt.Sprintf(":%d", WEB_SERVER_PORT)
+	webServerHost := fmt.Sprintf(":%d", constant.WEB_SERVER_PORT)
 	fmt.Printf("Server starting on %s\n", webServerHost)
 	if err := http.ListenAndServe(webServerHost, nil); err != nil {
 		log.Fatalln("Listening on web requests failed: ", err)
