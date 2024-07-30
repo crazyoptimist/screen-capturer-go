@@ -13,7 +13,7 @@ import (
 
 	"github.com/pion/mdns/v2"
 
-	"screencapturer/internal/constant"
+	"screencapturer/internal/config"
 	"screencapturer/internal/mdnsserver"
 )
 
@@ -29,11 +29,15 @@ func main() {
 		panic(err)
 	}
 
+	if _, err := config.InitDB(); err != nil {
+		panic(err)
+	}
+
 	_, ipAddr, err := server.QueryAddr(context.TODO(), "snail")
 	if err != nil {
 		fmt.Println("Querying a vhost failed: ", err)
 	}
-	httpAddr := fmt.Sprintf("http://%s:%d", ipAddr, constant.WEB_SERVER_PORT)
+	httpAddr := fmt.Sprintf("http://%s:%d", ipAddr, config.WEB_SERVER_PORT)
 	serverAddresses = append(serverAddresses, httpAddr)
 
 	// Request screenshots from all servers periodically

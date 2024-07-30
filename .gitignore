@@ -23,3 +23,6 @@ tmp
 
 # OS File System
 **/.DS_Store
+
+# DB File
+*.db
