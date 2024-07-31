@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"screencapturer/internal/capturer"
 	"screencapturer/internal/config"
-	"screencapturer/internal/mdnsserver"
+	"screencapturer/internal/infrastructure/capturer"
+	"screencapturer/internal/infrastructure/mdnsserver"
 )
 
 const CAPTURE_INTERVAL_IN_SECONDS = 5
