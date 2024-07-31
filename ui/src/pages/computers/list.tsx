@@ -35,6 +35,14 @@ export const ComputerList: React.FC = () => {
         flex: 1,
       },
       {
+        field: "ipAddress",
+        filterable: false,
+        sortable: false,
+        headerName: "IP Address",
+        minWidth: 100,
+        flex: 1,
+      },
+      {
         field: "updatedAt",
         filterable: false,
         sortable: false,

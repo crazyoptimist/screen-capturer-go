@@ -7,5 +7,6 @@ export interface IComputer {
   createdAt: string;
   updatedAt: string;
   name: string;
+  ipAddress: string;
   isActive?: boolean;
 }
