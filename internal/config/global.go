@@ -7,9 +7,6 @@ import (
 	"screencapturer/internal/domain/model"
 )
 
-const WEB_SERVER_PORT = 8949
-const CLIENT_WEB_PORT = 9999
-
 var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {

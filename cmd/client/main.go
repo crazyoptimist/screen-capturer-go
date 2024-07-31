@@ -14,18 +14,14 @@ import (
 	"github.com/pion/mdns/v2"
 
 	"screencapturer/internal/config"
+	"screencapturer/internal/constant"
 	"screencapturer/internal/domain/model"
 	"screencapturer/internal/infrastructure/capturer"
 	"screencapturer/internal/infrastructure/mdnsserver"
 	"screencapturer/internal/infrastructure/server"
 )
 
-type CaptureServer struct {
-	Name     string
-	Endpoint string
-}
-
-const REQUEST_INTERVAL_IN_SECONDS = 60
+const REQUEST_INTERVAL_IN_SECONDS = 5
 
 var outDirPath string
 var help bool
@@ -52,43 +48,28 @@ func main() {
 		outDirPath = filepath.Join(userHomeDir, "Downloads")
 	}
 
-	// Create a mDNS server instance for querying
-	mDNSServer, err := mdnsserver.CreateMDNSServer(true, false, &mdns.Config{})
-	if err != nil {
-		panic(err)
-	}
-
 	// Initialize the database
 	if _, err := config.InitDB(); err != nil {
 		panic(err)
 	}
 
-	var captureServers = []CaptureServer{}
+	// Get all the registered computers
 	var computers = []model.Computer{}
 	if err := config.DB.Limit(256).Find(&computers).Error; err != nil {
 		log.Fatalln("Database querying failed: ", err)
 	}
 
-	for _, computer := range computers {
-		ctx, _ := context.WithTimeout(context.Background(), 1*time.Second)
-		res, ipAddr, err := mDNSServer.QueryAddr(ctx, computer.Name)
-		if err != nil {
-			fmt.Printf("mDNS: querying [%s] failed: %v\n", computer.Name, err)
-		}
-		fmt.Println(res)
-
-		endpoint := fmt.Sprintf("http://%s:%d", ipAddr, config.WEB_SERVER_PORT)
-		captureServers = append(captureServers, CaptureServer{Name: computer.Name, Endpoint: endpoint})
-	}
-	fmt.Println(captureServers)
-
 	// Request screenshots from all servers periodically
 	go func() {
 		for range time.Tick(REQUEST_INTERVAL_IN_SECONDS * time.Second) {
-			wg.Add(len(captureServers))
-			for _, captureServer := range captureServers {
-				addr := captureServer.Endpoint
-				outPath := filepath.Join(outDirPath, captureServer.Name)
+			wg.Add(len(computers))
+			for _, pc := range computers {
+				addr := pc.GetEndpoint()
+				if addr == "" || !pc.IsActive {
+					continue
+				}
+
+				outPath := filepath.Join(outDirPath, pc.Name)
 
 				go func(addr string) {
 					defer wg.Done()
@@ -98,6 +79,17 @@ func main() {
 			wg.Wait()
 		}
 	}()
+
+	// Periodically scan computers in the LAN
+	mDNSServer, err := mdnsserver.CreateMDNSServer(true, false, &mdns.Config{})
+	if err != nil {
+		panic(err)
+	}
+	go func(*mdns.Conn) {
+		for range time.Tick(constant.SCAN_NETWORK_INTERVAL_IN_SECONDS * time.Second) {
+			capturer.Scan(mDNSServer)
+		}
+	}(mDNSServer)
 
 	// Expose Web/UI
 	httpServer := server.NewServer()

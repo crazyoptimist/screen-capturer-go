@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"screencapturer/internal/config"
+	"screencapturer/internal/constant"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +12,7 @@ func NewServer() *http.Server {
 	r := registerRoutes()
 
 	return &http.Server{
-		Addr:    fmt.Sprintf(":%v", config.CLIENT_WEB_PORT),
+		Addr:    fmt.Sprintf(":%v", constant.CLIENT_WEB_PORT),
 		Handler: r,
 	}
 }

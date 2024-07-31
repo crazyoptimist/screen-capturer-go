@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"screencapturer/internal/config"
+	"screencapturer/internal/constant"
 	"screencapturer/internal/infrastructure/capturer"
 	"screencapturer/internal/infrastructure/mdnsserver"
 )
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// Run the web server
-	webServerHost := fmt.Sprintf(":%d", config.WEB_SERVER_PORT)
+	webServerHost := fmt.Sprintf(":%d", constant.SERVER_WEB_PORT)
 	fmt.Printf("Server starting on %s\n", webServerHost)
 	if err := http.ListenAndServe(webServerHost, nil); err != nil {
 		log.Fatalln("Listening on web requests failed: ", err)

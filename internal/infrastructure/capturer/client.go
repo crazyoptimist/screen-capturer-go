@@ -1,13 +1,19 @@
 package capturer
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"screencapturer/internal/config"
+	"screencapturer/internal/constant"
+	"screencapturer/internal/domain/model"
 	"time"
+
+	"github.com/pion/mdns/v2"
 )
 
 func RequestScreenshot(addr, outDirPath string) {
@@ -49,4 +55,53 @@ func RequestScreenshot(addr, outDirPath string) {
 	}
 
 	fmt.Println("Image saved successfully to", fullPath)
+}
+
+// This function queries all the registered computers
+// and updates the active status with the found ip addresses
+func Scan(mDNSServer *mdns.Conn) error {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		constant.SCAN_NETWORK_INTERVAL_IN_SECONDS*time.Second,
+	)
+	defer cancel()
+
+	var computers = []model.Computer{}
+	if err := config.DB.Limit(256).Find(&computers).Error; err != nil {
+		log.Fatalln("Database querying failed: ", err)
+		return err
+	}
+
+	for _, pc := range computers {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			_ = findComputer(mDNSServer, &pc)
+		}
+	}
+	return nil
+}
+
+func findComputer(mDNSServer *mdns.Conn, pc *model.Computer) error {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		constant.FIND_PC_TIMEOUT_IN_SECONDS*time.Second,
+	)
+	defer cancel()
+
+	_, ipAddr, err := mDNSServer.QueryAddr(ctx, pc.Name)
+	if err != nil {
+		_ = config.DB.Model(pc).Updates(model.Computer{IsActive: false}).Error
+		return fmt.Errorf("mDNS: querying [%s] failed: %v\n", pc.Name, err)
+	}
+
+	if err := config.DB.Model(pc).Updates(model.Computer{
+		IsActive:  true,
+		IPAddress: fmt.Sprintf("%s", ipAddr),
+	}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
