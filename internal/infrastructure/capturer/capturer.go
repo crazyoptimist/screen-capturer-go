@@ -1,6 +1,7 @@
 package capturer
 
 import (
+	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -29,6 +30,12 @@ func GetMergedScreenFilePath() string {
 }
 
 func CaptureMergedScreen() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered from panic: %v\n", r)
+		}
+	}()
+
 	n := screenshot.NumActiveDisplays()
 	if n <= 0 {
 		panic("Active display not found")

@@ -43,14 +43,14 @@ func main() {
 	if outDirPath == "" {
 		userHomeDir, err := os.UserHomeDir()
 		if err != nil {
-			log.Fatalln("Couldn't get the user home dir.")
+			log.Fatalln("Couldn't find the user home dir.")
 		}
 		outDirPath = filepath.Join(userHomeDir, "Downloads")
 	}
 
 	// Initialize the database
 	if _, err := config.InitDB(); err != nil {
-		panic(err)
+		log.Fatalln("Database initialization failed: ", err)
 	}
 
 	// Request screenshots from all servers periodically
@@ -83,7 +83,7 @@ func main() {
 	// Periodically scan computers in the LAN
 	mDNSServer, err := mdnsserver.CreateMDNSServer(true, false, &mdns.Config{})
 	if err != nil {
-		panic(err)
+		log.Fatalln("Creating a mDNS instance failed: ", err)
 	}
 	go func(*mdns.Conn) {
 		for range time.Tick(constant.SCAN_NETWORK_INTERVAL_IN_SECONDS * time.Second) {
@@ -95,7 +95,7 @@ func main() {
 	httpServer := server.NewServer()
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Fatalf("Web server startup failed: %v", err)
+			log.Fatalln("Web server startup failed: ", err)
 		}
 	}()
 
@@ -108,7 +108,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Fatalf("HTTP server shutdown failed: %v", err)
+		log.Fatalln("HTTP server shutdown failed: ", err)
 	}
 	log.Println("Graceful shutdown finished.")
 }

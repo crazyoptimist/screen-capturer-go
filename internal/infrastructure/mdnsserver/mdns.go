@@ -16,12 +16,12 @@ func CreateMDNSServer(useV4, useV6 bool, config *mdns.Config) (*mdns.Conn, error
 	if useV4 {
 		addr4, err := net.ResolveUDPAddr("udp4", mdns.DefaultAddressIPv4)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		l4, err := net.ListenUDP("udp4", addr4)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		packetConnV4 = ipv4.NewPacketConn(l4)
@@ -31,12 +31,12 @@ func CreateMDNSServer(useV4, useV6 bool, config *mdns.Config) (*mdns.Conn, error
 	if useV6 {
 		addr6, err := net.ResolveUDPAddr("udp6", mdns.DefaultAddressIPv6)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		l6, err := net.ListenUDP("udp6", addr6)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		packetConnV6 = ipv6.NewPacketConn(l6)
