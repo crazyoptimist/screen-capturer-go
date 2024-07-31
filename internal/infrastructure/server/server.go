@@ -3,9 +3,11 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"screencapturer/internal/constant"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"screencapturer/internal/constant"
 )
 
 func NewServer() *http.Server {
@@ -22,6 +24,19 @@ func registerRoutes() *gin.Engine {
 
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowHeaders = []string{
+		"Authorization",
+		"Content-Type",
+		"Access-Control-Allow-Origin",
+		"X-CSRF-Token",
+	}
+	corsConfig.ExposeHeaders = []string{
+		"X-Total-Count",
+	}
+	router.Use(cors.New(corsConfig))
 
 	// Health check route
 	router.GET("/", func(c *gin.Context) {
