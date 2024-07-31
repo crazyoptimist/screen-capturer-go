@@ -104,7 +104,8 @@ func findComputer(mDNSServer *mdns.Conn, pc *model.Computer) error {
 
 	_, ipAddr, err := mDNSServer.QueryAddr(ctx, pc.Name)
 	if err != nil {
-		_ = config.DB.Model(pc).Updates(model.Computer{IsActive: false}).Error
+		// Use map here because GORM will only update non-zero fields if struct is used
+		_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": false}).Error
 		return fmt.Errorf("mDNS: querying [%s] failed: %v\n", pc.Name, err)
 	}
 
