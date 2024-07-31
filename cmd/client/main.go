@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -24,21 +23,11 @@ import (
 const REQUEST_INTERVAL_IN_SECONDS = 5
 
 var outDirPath string
-var help bool
 var wg sync.WaitGroup
 
 func main() {
 	flag.StringVar(&outDirPath, "dir", "", "Output directory name")
-	flag.BoolVar(&help, "help", false, "Show help")
 	flag.Parse()
-
-	if help {
-		fmt.Println(`
---dir <Output directory name> Stores the downloaded images to the output dir.
-      It defaults to the Downloads folder if not provided.
---help Shows the usage guide`)
-		return
-	}
 
 	if outDirPath == "" {
 		userHomeDir, err := os.UserHomeDir()

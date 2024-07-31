@@ -16,19 +16,10 @@ import (
 const CAPTURE_INTERVAL_IN_SECONDS = 5
 
 var vhost string
-var help bool
 
 func main() {
 	flag.StringVar(&vhost, "vhost", "", "Virtual host name")
-	flag.BoolVar(&help, "help", false, "Show help")
 	flag.Parse()
-
-	if help {
-		fmt.Println(`
---vhost <Your virtual host name> Runs the screen capture application.
---help Shows the usage guide`)
-		return
-	}
 
 	if vhost == "" {
 		fmt.Println("Virtual host name must be set.")
