@@ -11,13 +11,25 @@ import (
 	"screencapturer/internal/config"
 	"screencapturer/internal/constant"
 	"screencapturer/internal/domain/model"
+	"screencapturer/pkg/utils"
 	"time"
 
 	"github.com/pion/mdns/v2"
 )
 
+const HTTP_REQUEST_TIMEOUT_IN_SECONDS = 3
+
 func RequestScreenshot(addr, outDirPath string) {
-	resp, err := http.Get(addr)
+	if err := utils.CreateDirIfNotExists(outDirPath); err != nil {
+		log.Println("Error creating the output directory failed: ", err)
+		return
+	}
+
+	client := http.Client{
+		Timeout: HTTP_REQUEST_TIMEOUT_IN_SECONDS * time.Second, // Set timeout to 5 seconds
+	}
+
+	resp, err := client.Get(addr)
 	if err != nil {
 		log.Printf("Error requesting screenshot from %s: %v", addr, err)
 		return
@@ -54,7 +66,7 @@ func RequestScreenshot(addr, outDirPath string) {
 		return
 	}
 
-	fmt.Println("Image saved successfully to", fullPath)
+	// log.Println("Image saved successfully to", fullPath)
 }
 
 // This function queries all the registered computers

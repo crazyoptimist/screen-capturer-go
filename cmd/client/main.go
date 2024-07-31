@@ -62,7 +62,6 @@ func main() {
 	// Request screenshots from all servers periodically
 	go func() {
 		for range time.Tick(REQUEST_INTERVAL_IN_SECONDS * time.Second) {
-			wg.Add(len(computers))
 			for _, pc := range computers {
 				addr := pc.GetEndpoint()
 				if addr == "" || !pc.IsActive {
@@ -71,10 +70,11 @@ func main() {
 
 				outPath := filepath.Join(outDirPath, pc.Name)
 
-				go func(addr string) {
+				wg.Add(1)
+				go func(addr, outPath string) {
 					defer wg.Done()
 					capturer.RequestScreenshot(addr, outPath)
-				}(addr)
+				}(addr, outPath)
 			}
 			wg.Wait()
 		}
