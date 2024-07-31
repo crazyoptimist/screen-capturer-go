@@ -53,15 +53,15 @@ func main() {
 		panic(err)
 	}
 
-	// Get all the registered computers
-	var computers = []model.Computer{}
-	if err := config.DB.Limit(256).Find(&computers).Error; err != nil {
-		log.Fatalln("Database querying failed: ", err)
-	}
-
 	// Request screenshots from all servers periodically
 	go func() {
 		for range time.Tick(REQUEST_INTERVAL_IN_SECONDS * time.Second) {
+			// Get all the registered computers
+			var computers = []model.Computer{}
+			if err := config.DB.Limit(256).Find(&computers).Error; err != nil {
+				log.Fatalln("Database querying failed: ", err)
+			}
+
 			for _, pc := range computers {
 				addr := pc.GetEndpoint()
 				if addr == "" || !pc.IsActive {
