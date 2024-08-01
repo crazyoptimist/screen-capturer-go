@@ -89,7 +89,7 @@ function docTitleHandler({
 }: {
   resource?: IResourceItem | undefined;
 }) {
-  let title = "CAP Recruitment";
+  let title = "Screen Capturer Control Panel";
   if (resource) {
     title = `${resource.name} | ${title}`;
   }

@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/gin-contrib/cors v1.7.2
+	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/kbinani/screenshot v0.0.0-20230812210009-b87d31814237

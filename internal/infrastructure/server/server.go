@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 
 	"screencapturer/internal/constant"
+	"screencapturer/ui"
 )
 
 func NewServer() *http.Server {
@@ -38,16 +40,18 @@ func registerRoutes() *gin.Engine {
 	}
 	router.Use(cors.New(corsConfig))
 
-	// Health check route
-	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "OK")
-	})
+	// UI
+	router.Use(static.Serve("/", static.EmbedFolder(ui.EmbeddedFS, "dist")))
 
 	v1 := router.Group("/api")
 	{
 		computersGroup := v1.Group("/computers")
 		registerComputerRoutes(computersGroup)
 	}
+
+	router.NoRoute(func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/")
+	})
 
 	return router
 }
