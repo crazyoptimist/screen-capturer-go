@@ -28,7 +28,9 @@ func registerRoutes() *gin.Engine {
 	router.Use(gin.Recovery())
 
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowOrigins = []string{
+		"http://localhost",
+	}
 	corsConfig.AllowHeaders = []string{
 		"Authorization",
 		"Content-Type",
