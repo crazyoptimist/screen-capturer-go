@@ -13,7 +13,7 @@ import (
 	"screencapturer/internal/infrastructure/mdnsserver"
 )
 
-const CAPTURE_INTERVAL_IN_SECONDS = 5
+const CAPTURE_INTERVAL_IN_SECONDS = 11
 
 var vhost string
 
