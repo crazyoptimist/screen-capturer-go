@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"screencapturer/internal/constant"
 	"screencapturer/internal/infrastructure/capturer"
@@ -26,16 +25,12 @@ func main() {
 		return
 	}
 
-	// Generate a merged screenshot periodically
-	go func() {
-		for range time.Tick(CAPTURE_INTERVAL_IN_SECONDS * time.Second) {
-			capturer.CaptureMergedScreen()
-		}
-	}()
-
-	// Serve the screenshot over HTTP
+	// Capture screen if requested,
+	// serve the screenshot over HTTP
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
+
+		capturer.CaptureMergedScreen()
 
 		imgPath := capturer.GetMergedScreenFilePath()
 		data, err := os.ReadFile(imgPath)
