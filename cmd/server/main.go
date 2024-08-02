@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"screencapturer/internal/constant"
 	"screencapturer/internal/infrastructure/capturer"
 	"screencapturer/internal/infrastructure/mdnsserver"
+	"screencapturer/pkg/common"
 )
 
 const CAPTURE_INTERVAL_IN_SECONDS = 11
@@ -30,7 +32,15 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 
-		capturer.CaptureMergedScreen()
+		if err := capturer.CaptureMergedScreen(); err != nil {
+			jsonError, _ := json.Marshal(common.HttpError{
+				StatusCode: http.StatusBadGateway,
+				Message:    err.Error(),
+			})
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(jsonError)
+			return
+		}
 
 		imgPath := capturer.GetMergedScreenFilePath()
 		data, err := os.ReadFile(imgPath)
@@ -43,6 +53,7 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(w, "Error writing screen file: %v", err)
 		}
+		return
 	})
 
 	// Publish via mdns server
