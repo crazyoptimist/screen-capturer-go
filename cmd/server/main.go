@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -32,10 +31,9 @@ func main() {
 		w.Header().Set("Content-Type", "image/png")
 
 		if err := capturer.CaptureMergedScreen(); err != nil {
-			w.Header().Set("Content-Type", "application/json")
+			fmt.Printf("Error capturing the merged screen: %v", err)
 			w.WriteHeader(http.StatusBadGateway)
-			jsonError, _ := json.Marshal(err)
-			w.Write(jsonError)
+			fmt.Fprintf(w, "Error capturing the merged screen: %v", err)
 			return
 		}
 
