@@ -11,7 +11,6 @@ import (
 	"screencapturer/internal/constant"
 	"screencapturer/internal/infrastructure/capturer"
 	"screencapturer/internal/infrastructure/mdnsserver"
-	"screencapturer/pkg/common"
 )
 
 const CAPTURE_INTERVAL_IN_SECONDS = 11
@@ -33,11 +32,9 @@ func main() {
 		w.Header().Set("Content-Type", "image/png")
 
 		if err := capturer.CaptureMergedScreen(); err != nil {
-			jsonError, _ := json.Marshal(common.HttpError{
-				StatusCode: http.StatusBadGateway,
-				Message:    err.Error(),
-			})
 			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadGateway)
+			jsonError, _ := json.Marshal(err)
 			w.Write(jsonError)
 			return
 		}
