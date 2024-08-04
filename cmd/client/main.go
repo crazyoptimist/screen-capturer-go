@@ -20,13 +20,13 @@ import (
 	"screencapturer/internal/infrastructure/server"
 )
 
-const REQUEST_INTERVAL_IN_SECONDS = 60
-
 var outDirPath string
 var wg sync.WaitGroup
+var captureInterval uint
 
 func main() {
 	flag.StringVar(&outDirPath, "dir", "", "Output directory name")
+	flag.UintVar(&captureInterval, "interval", 60, "Capture interval in seconds")
 	flag.Parse()
 
 	if outDirPath == "" {
@@ -44,7 +44,7 @@ func main() {
 
 	// Request screenshots from all servers periodically
 	go func() {
-		for range time.Tick(REQUEST_INTERVAL_IN_SECONDS * time.Second) {
+		for range time.Tick(time.Duration(captureInterval) * time.Second) {
 			// Get all the registered computers
 			var computers = []model.Computer{}
 			if err := config.DB.Limit(256).Find(&computers).Error; err != nil {
