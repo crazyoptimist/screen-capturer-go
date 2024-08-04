@@ -1,6 +1,7 @@
 import React from "react";
 import { EditButton, DeleteButton, List, useDataGrid } from "@refinedev/mui";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { Chip } from "@mui/material";
 import dayjs from "dayjs";
 
 import { IComputer } from "../../interfaces";
@@ -31,6 +32,13 @@ export const ComputerList: React.FC = () => {
         filterable: false,
         sortable: false,
         headerName: "Is Active",
+        renderCell: function render({ row }) {
+          return row.isActive ? (
+            <Chip label="Yes" color="success" size="small" />
+          ) : (
+            <Chip label="No" color="error" size="small" />
+          );
+        },
         minWidth: 100,
         flex: 1,
       },
