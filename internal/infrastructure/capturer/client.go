@@ -35,9 +35,11 @@ func RequestScreenshot(addr, outDirPath string) {
 		return
 	}
 	defer resp.Body.Close()
+
 	// Check for successful response status code
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Error: Server returned status code %d while fetching screenshot from %s", resp.StatusCode, addr)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		log.Printf("Status code %d from %s: %s", resp.StatusCode, addr, string(bodyBytes))
 		return
 	}
 

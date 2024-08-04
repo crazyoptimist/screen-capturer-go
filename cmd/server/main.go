@@ -31,7 +31,7 @@ func main() {
 		w.Header().Set("Content-Type", "image/png")
 
 		if err := capturer.CaptureMergedScreen(); err != nil {
-			fmt.Printf("Error capturing the merged screen: %v", err)
+			log.Printf("Error capturing the merged screen: %v", err)
 			w.WriteHeader(http.StatusBadGateway)
 			fmt.Fprintf(w, "Error capturing the merged screen: %v", err)
 			return
