@@ -45,7 +45,7 @@ func RequestScreenshot(addr, outDirPath string) {
 
 	// Generate a unique filename with the current timestamp
 	filename := fmt.Sprintf(
-		"screenshot_%d-%02d-%02dT%02d-%02d-%02d.png",
+		"screenshot_%d-%02d-%02dT%02d-%02d-%02d.jpeg",
 		time.Now().Year(), time.Now().Month(), time.Now().Day(),
 		time.Now().Hour(), time.Now().Minute(), time.Now().Second(),
 	)

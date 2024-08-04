@@ -28,7 +28,7 @@ func main() {
 	// Capture screen if requested,
 	// serve the screenshot over HTTP
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Content-Type", "image/jpeg")
 
 		if err := capturer.CaptureMergedScreen(); err != nil {
 			log.Printf("Error capturing the merged screen: %v", err)

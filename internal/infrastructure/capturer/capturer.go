@@ -3,14 +3,14 @@ package capturer
 import (
 	"errors"
 	"image"
-	"image/png"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 
 	"github.com/kbinani/screenshot"
 )
 
-// save *image.RGBA to filePath with PNG format.
+// save *image.RGBA to filePath
 func save(img *image.RGBA, filePath string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -18,7 +18,15 @@ func save(img *image.RGBA, filePath string) error {
 	}
 	defer file.Close()
 
-	err = png.Encode(file, img)
+	// var imageQuality = 100
+	// fileSizeEstimated := len(img.Pix) * 4 // Each pixel is 4 bytes (RGBA)
+	// fileSizeLimit := 500 * 1024           // Target file size in bytes
+
+	// if fileSizeEstimated > fileSizeLimit {
+	// 	imageQuality = 100 * (fileSizeLimit / fileSizeEstimated)
+	// }
+
+	err = jpeg.Encode(file, img, nil)
 	if err != nil {
 		return err
 	}
@@ -27,7 +35,7 @@ func save(img *image.RGBA, filePath string) error {
 }
 
 func GetMergedScreenFilePath() string {
-	fileName := "merged-screen.png"
+	fileName := "merged-screen.jpeg"
 
 	return filepath.Join(os.TempDir(), fileName)
 }
@@ -49,7 +57,7 @@ func CaptureMergedScreen() error {
 		if err != nil {
 			return err
 		}
-		fileName := fmt.Sprintf("%d_%dx%d.png", i, bounds.Dx(), bounds.Dy())
+		fileName := fmt.Sprintf("%d_%dx%d.jpeg", i, bounds.Dx(), bounds.Dy())
 		save(img, fileName)
 
 		fmt.Printf("#%d : %v \"%s\"\n", i, bounds, fileName)
