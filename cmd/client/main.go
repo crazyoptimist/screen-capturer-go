@@ -20,7 +20,7 @@ import (
 	"screencapturer/internal/infrastructure/server"
 )
 
-const REQUEST_INTERVAL_IN_SECONDS = 12
+const REQUEST_INTERVAL_IN_SECONDS = 60
 
 var outDirPath string
 var wg sync.WaitGroup
