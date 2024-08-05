@@ -18,7 +18,7 @@ import (
 	"screencapturer/pkg/utils"
 )
 
-const HTTP_REQUEST_TIMEOUT_IN_SECONDS = 3
+const HTTP_REQUEST_TIMEOUT_IN_SECONDS = 2
 
 func RequestScreenshot(addr, outDirPath string) error {
 	if err := utils.CreateDirIfNotExists(outDirPath); err != nil {
@@ -26,7 +26,7 @@ func RequestScreenshot(addr, outDirPath string) error {
 	}
 
 	client := http.Client{
-		Timeout: HTTP_REQUEST_TIMEOUT_IN_SECONDS * time.Second, // Set timeout to 5 seconds
+		Timeout: HTTP_REQUEST_TIMEOUT_IN_SECONDS * time.Second,
 	}
 
 	resp, err := client.Get(addr)
