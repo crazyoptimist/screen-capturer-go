@@ -59,7 +59,7 @@ func main() {
 					defer wg.Done()
 
 					addr := pc.GetEndpoint()
-					if addr == "" || !pc.IsActive {
+					if addr == "" {
 						return
 					}
 
@@ -67,6 +67,7 @@ func main() {
 					if err != nil {
 						_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": false}).Error
 						log.Printf("Requesting screenshot from %s failed: %v", pc.Name, err)
+						return
 					}
 
 					// If capture was successful, check the status of the computer
