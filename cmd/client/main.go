@@ -52,18 +52,28 @@ func main() {
 			}
 
 			for _, pc := range computers {
-				addr := pc.GetEndpoint()
-				if addr == "" || !pc.IsActive {
-					continue
-				}
-
 				outPath := filepath.Join(outDirPath, pc.Name)
 
 				wg.Add(1)
-				go func(addr, outPath string) {
+				go func(pc model.Computer, outPath string) {
 					defer wg.Done()
-					capturer.RequestScreenshot(addr, outPath)
-				}(addr, outPath)
+
+					addr := pc.GetEndpoint()
+					if addr == "" || !pc.IsActive {
+						return
+					}
+
+					err := capturer.RequestScreenshot(addr, outPath)
+					if err != nil {
+						_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": false}).Error
+						log.Printf("Requesting screenshot from %s failed: %v", pc.Name, err)
+					}
+
+					// If capture was successful, check the status of the computer
+					if pc.IsActive == false {
+						_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": true}).Error
+					}
+				}(pc, outPath)
 			}
 			wg.Wait()
 		}

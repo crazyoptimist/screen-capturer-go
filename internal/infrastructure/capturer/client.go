@@ -8,21 +8,21 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/pion/mdns/v2"
+
 	"screencapturer/internal/config"
 	"screencapturer/internal/constant"
 	"screencapturer/internal/domain/model"
 	"screencapturer/pkg/utils"
-	"time"
-
-	"github.com/pion/mdns/v2"
 )
 
 const HTTP_REQUEST_TIMEOUT_IN_SECONDS = 3
 
-func RequestScreenshot(addr, outDirPath string) {
+func RequestScreenshot(addr, outDirPath string) error {
 	if err := utils.CreateDirIfNotExists(outDirPath); err != nil {
-		log.Println("Error creating the output directory failed: ", err)
-		return
+		return fmt.Errorf("Error creating the output directory failed: %v", err)
 	}
 
 	client := http.Client{
@@ -31,16 +31,14 @@ func RequestScreenshot(addr, outDirPath string) {
 
 	resp, err := client.Get(addr)
 	if err != nil {
-		log.Printf("Error requesting screenshot from %s: %v", addr, err)
-		return
+		return fmt.Errorf("Error requesting screenshot from %s: %v", addr, err)
 	}
 	defer resp.Body.Close()
 
-	// Check for successful response status code
+	// Check for successful response
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		log.Printf("Status code %d from %s: %s", resp.StatusCode, addr, string(bodyBytes))
-		return
+		return fmt.Errorf("Status code %d from %s: %s", resp.StatusCode, addr, string(bodyBytes))
 	}
 
 	// Generate a unique filename with the current timestamp
@@ -56,23 +54,21 @@ func RequestScreenshot(addr, outDirPath string) {
 	// Create a new file for saving the image
 	outFile, err := os.Create(fullPath)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
+		return fmt.Errorf("Error creating file: %v", err)
 	}
 	defer outFile.Close()
 
 	// Copy the image data from the response to the local file
 	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
-		fmt.Println("Error saving image:", err)
-		return
+		return fmt.Errorf("Error saving image: %v", err)
 	}
 
-	// log.Println("Image saved successfully to", fullPath)
+	return nil
 }
 
 // This function queries all the registered computers
-// and updates the active status with the found ip addresses
+// and updates the IP addresses with the results
 func Scan(mDNSServer *mdns.Conn) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
@@ -91,13 +87,26 @@ func Scan(mDNSServer *mdns.Conn) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			_ = findComputer(mDNSServer, &pc)
+			ipAddress, err := findIPAddress(mDNSServer, &pc)
+			if err != nil {
+				// Use map here because GORM will only update non-zero fields if struct is used
+				_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": false}).Error
+				log.Printf("Finding IP address failed for %s: %v", pc.Name, err)
+				continue
+			}
+
+			if err := config.DB.Model(pc).Updates(model.Computer{
+				IPAddress: ipAddress,
+			}).Error; err != nil {
+				log.Printf("Updating IP address failed: %v", err)
+				continue
+			}
 		}
 	}
 	return nil
 }
 
-func findComputer(mDNSServer *mdns.Conn, pc *model.Computer) error {
+func findIPAddress(mDNSServer *mdns.Conn, pc *model.Computer) (string, error) {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		constant.FIND_PC_TIMEOUT_IN_SECONDS*time.Second,
@@ -106,17 +115,8 @@ func findComputer(mDNSServer *mdns.Conn, pc *model.Computer) error {
 
 	_, ipAddr, err := mDNSServer.QueryAddr(ctx, pc.Name)
 	if err != nil {
-		// Use map here because GORM will only update non-zero fields if struct is used
-		_ = config.DB.Model(pc).Updates(map[string]interface{}{"is_active": false}).Error
-		return fmt.Errorf("mDNS: querying [%s] failed: %v\n", pc.Name, err)
+		return "", err
 	}
 
-	if err := config.DB.Model(pc).Updates(model.Computer{
-		IsActive:  true,
-		IPAddress: fmt.Sprintf("%s", ipAddr),
-	}).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return fmt.Sprintf("%s", ipAddr), nil
 }
