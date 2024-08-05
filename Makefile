@@ -1,6 +1,6 @@
 APP_NAME=screen
 
-.PHONY: linux windows mac ui all
+.PHONY: linux windows mac ui clean all
 
 linux:
 	@echo "Building for Linux"
@@ -17,4 +17,7 @@ mac:
 ui:
 	@echo "Building the dashboard UI"
 	cd ${PWD}/ui && npm install && npm run build
-all: ui linux windows mac
+clean:
+	@echo "Cleaning previous builds"
+	rm -rf ${PWD}/dist
+all: clean ui linux windows mac
