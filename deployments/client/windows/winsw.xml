@@ -3,7 +3,6 @@
   <name>ScreenCapturerControlPanel</name>
   <description>This service runs the screen capturer contol panel that monitors computers via LAN.</description>
   <executable>screen-client.exe</executable>
-  <arguments>-dir "F:\CaptureStorage"</arguments>
-  <arguments>-interval 60</arguments>
+  <arguments>-dir "F:\CaptureStorage" -interval 60</arguments>
   <log mode="none"></log>
 </service>

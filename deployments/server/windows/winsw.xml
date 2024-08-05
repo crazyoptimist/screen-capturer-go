@@ -1,8 +1,0 @@
-<service>
-  <id>screen-capturer</id>
-  <name>ScreenCapturer</name>
-  <description>This service runs the screen capture server.</description>
-  <executable>screen-server.exe</executable>
-  <arguments>-vhost Replace-This</arguments>
-  <log mode="none"></log>
-</service>
