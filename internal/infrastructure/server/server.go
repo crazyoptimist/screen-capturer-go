@@ -29,8 +29,9 @@ func registerRoutes() *gin.Engine {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{
-		"http://localhost:5173", // dev ui
-		"http://localhost:9999", // prod
+		"http://localhost:5173",     // dev ui
+		"http://localhost:9999",     // prod
+		"http://192.168.1.200:9999", // prod
 	}
 	corsConfig.AllowHeaders = []string{
 		"Authorization",
