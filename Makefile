@@ -1,6 +1,6 @@
 APP_NAME=screen
 
-.PHONY: linux windows mac all
+.PHONY: linux windows mac ui all
 
 linux:
 	@echo "Building for Linux"
@@ -14,4 +14,7 @@ mac:
 	@echo "Building for Mac"
 	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o ./dist/mac/$(APP_NAME)-server-darwin -tags netgo -ldflags "-w -s" ./cmd/server/
 	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o ./dist/mac/$(APP_NAME)-client-darwin -tags netgo -ldflags "-w -s" ./cmd/client/
-all: linux windows mac
+ui:
+	@echo "Building the dashboard UI"
+	cd ${PWD}/ui && npm install && npm run build
+all: ui linux windows mac
