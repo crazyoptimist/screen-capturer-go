@@ -21,7 +21,7 @@ import (
 
 const CAPTURE_REQUEST_TIMEOUT_IN_SECONDS = 2
 const MAX_RETRY_REQUEST_COUNT = 3
-const RETRY_COOLDOWN_IN_MILLI_SECONDS = 500
+const RETRY_COOLDOWN_IN_MILLISECONDS = 500
 
 func sendRequest(addr string) (*http.Response, error) {
 	client := http.Client{
@@ -30,7 +30,6 @@ func sendRequest(addr string) (*http.Response, error) {
 
 	resp, err := client.Get(addr)
 	if err != nil {
-		resp.Body.Close()
 		return nil, fmt.Errorf("Error requesting screenshot from %s: %v", addr, err)
 	}
 
@@ -81,7 +80,7 @@ func RequestScreenshot(addr, outDirPath string) error {
 	for retry = 0; retry < MAX_RETRY_REQUEST_COUNT; retry++ {
 		resp, err := sendRequest(addr)
 		if err != nil {
-			time.Sleep(RETRY_COOLDOWN_IN_MILLI_SECONDS * time.Millisecond)
+			time.Sleep(RETRY_COOLDOWN_IN_MILLISECONDS * time.Millisecond)
 			continue
 		} else {
 			defer resp.Body.Close()
