@@ -2,6 +2,7 @@ package capturer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,27 +19,34 @@ import (
 	"screencapturer/pkg/utils"
 )
 
-const HTTP_REQUEST_TIMEOUT_IN_SECONDS = 2
+const CAPTURE_REQUEST_TIMEOUT_IN_SECONDS = 2
+const MAX_RETRY_REQUEST_COUNT = 3
+const RETRY_COOLDOWN_IN_MILLI_SECONDS = 500
 
-func RequestScreenshot(addr, outDirPath string) error {
-	if err := utils.CreateDirIfNotExists(outDirPath); err != nil {
-		return fmt.Errorf("Error creating the output directory failed: %v", err)
-	}
-
+func sendRequest(addr string) (*http.Response, error) {
 	client := http.Client{
-		Timeout: HTTP_REQUEST_TIMEOUT_IN_SECONDS * time.Second,
+		Timeout: CAPTURE_REQUEST_TIMEOUT_IN_SECONDS * time.Second,
 	}
 
 	resp, err := client.Get(addr)
 	if err != nil {
-		return fmt.Errorf("Error requesting screenshot from %s: %v", addr, err)
+		resp.Body.Close()
+		return nil, fmt.Errorf("Error requesting screenshot from %s: %v", addr, err)
 	}
-	defer resp.Body.Close()
 
 	// Check for successful response
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Status code %d from %s: %s", resp.StatusCode, addr, string(bodyBytes))
+		resp.Body.Close()
+		return nil, fmt.Errorf("Error code %d from %s: %s", resp.StatusCode, addr, string(bodyBytes))
+	}
+
+	return resp, nil
+}
+
+func saveResponseToImage(resp *http.Response, outDirPath string) error {
+	if err := utils.CreateDirIfNotExists(outDirPath); err != nil {
+		return fmt.Errorf("Error creating the output directory failed: %v", err)
 	}
 
 	// Generate a unique filename with the current timestamp
@@ -62,6 +70,30 @@ func RequestScreenshot(addr, outDirPath string) error {
 	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
 		return fmt.Errorf("Error saving image: %v", err)
+	}
+
+	return nil
+}
+
+func RequestScreenshot(addr, outDirPath string) error {
+	var retry int8
+
+	for retry = 0; retry < MAX_RETRY_REQUEST_COUNT; retry++ {
+		resp, err := sendRequest(addr)
+		if err != nil {
+			time.Sleep(RETRY_COOLDOWN_IN_MILLI_SECONDS * time.Millisecond)
+			continue
+		} else {
+			defer resp.Body.Close()
+			if err = saveResponseToImage(resp, outDirPath); err != nil {
+				return err
+			}
+			break
+		}
+	}
+
+	if retry == MAX_RETRY_REQUEST_COUNT {
+		return errors.New("Retry request exhausted.")
 	}
 
 	return nil
