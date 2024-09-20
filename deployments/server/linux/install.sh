@@ -7,6 +7,7 @@ EXE="/usr/local/bin/screen-server-linux"
 if [ ${XDG_SESSION_TYPE} = "x11" ] ;then 
   sudo chmod +x ./screen-server-linux
   sudo cp ./screen-server-linux $EXE
+  sudo cp ./screen-server-linux.desktop /usr/share/applications
 
   echo "Successfully installed the application."
 else
