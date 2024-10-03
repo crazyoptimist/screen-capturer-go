@@ -1,9 +1,10 @@
 [Desktop Entry]
+Categories=System;Utility
+Comment=Start screen capturer agent
 Version=1.0
-Name=screen-server-linux
-Comment=Screen Capture Server (Agent)
+Name=Screen Capturer Agent
 Exec=/usr/local/bin/screen-server-linux -vhost Replace-This
 Icon=utilities-terminal
 Terminal=false
 Type=Application
-Categories=Application;
+Hidden=true
